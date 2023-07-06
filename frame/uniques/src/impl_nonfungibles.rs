@@ -126,7 +126,7 @@ impl<T: Config<I>, I: 'static> Mutate<<T as SystemConfig>::AccountId> for Pallet
 		item: &Self::ItemId,
 		who: &T::AccountId,
 	) -> DispatchResult {
-		Self::do_mint(*collection, *item, who.clone(), |_| Ok(()))
+		Self::do_mint(*collection, *item, who.clone(), None, |_| Ok(()))
 	}
 
 	fn burn(

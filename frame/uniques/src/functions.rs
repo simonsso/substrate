@@ -145,6 +145,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		collection: T::CollectionId,
 		item: T::ItemId,
 		owner: T::AccountId,
+		extra_deposit: Option<DepositBalanceOf<T,I>>,
 		with_details: impl FnOnce(&CollectionDetailsFor<T, I>) -> DispatchResult,
 	) -> DispatchResult {
 		ensure!(!Item::<T, I>::contains_key(collection, item), Error::<T, I>::AlreadyExists);
@@ -168,7 +169,8 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 				let deposit = match collection_details.free_holding {
 					true => Zero::zero(),
 					false => T::ItemDeposit::get(),
-				};
+				}.saturating_add(extra_deposit.unwrap_or(Zero::zero()));
+
 				T::Currency::reserve(&collection_details.owner, deposit)?;
 				collection_details.total_deposit += deposit;
 

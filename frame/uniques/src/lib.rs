@@ -570,7 +570,7 @@ pub mod pallet {
 			let origin = ensure_signed(origin)?;
 			let owner = T::Lookup::lookup(owner)?;
 
-			Self::do_mint(collection, item, owner, |collection_details| {
+			Self::do_mint(collection, item, owner, None, |collection_details| {
 				ensure!(collection_details.issuer == origin, Error::<T, I>::NoPermission);
 				Ok(())
 			})
@@ -1528,6 +1528,36 @@ pub mod pallet {
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 			Self::do_buy_item(collection, item, origin, bid_price)
+		}
+
+		/// Mint an item of a particular collection with extra deposit.
+		///
+		/// The origin must be Signed and the sender must be the Issuer of the `collection`.
+		///
+		/// - `collection`: The collection of the item to be minted.
+		/// - `item`: The item value of the item to be minted.
+		/// - `owner`: The initial owner of the minted item.
+		///
+		/// Emits `Issued` event when successful.
+		///
+		/// Weight: `O(1)`
+		#[pallet::call_index(26)]
+		#[pallet::weight(T::WeightInfo::buy_item())]
+		#[transactional]
+		pub fn mint_with_extra_deposit(
+			origin: OriginFor<T>,
+			collection: T::CollectionId,
+			item: T::ItemId,
+			owner: AccountIdLookupOf<T>,
+			deposit: DepositBalanceOf<T,I>,
+
+		) -> DispatchResult {
+			let origin = ensure_signed(origin)?;
+			let owner = T::Lookup::lookup(owner)?;
+			Self::do_mint(collection, item, owner, Some(deposit), |collection_details| {
+				ensure!(collection_details.issuer == origin, Error::<T, I>::NoPermission);
+				Ok(())
+			})
 		}
 	}
 }
